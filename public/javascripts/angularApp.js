@@ -103,40 +103,44 @@ angular.module('weatherNews', ['ui.router'])
 ])
 
 .controller('PostCtrl', [
+	'$location',
 	'$scope',
 	'$stateParams',
 	'postFactory', 
-	function($scope, $stateParams, postFactory) {
+	function($location, $scope, $stateParams, postFactory) {
 
 		var mypost = postFactory.posts[$stateParams.id];
-		postFactory.getPost(mypost._id);
-		$scope.post = postFactory.post;
 
-		$scope.addComment = function(){
+		if (mypost === undefined)  {
 
-			if($scope.body === '') { return; }
+			$location.path('/home').replace();
 
-			postFactory.addNewComment(postFactory.post._id, {
-				
-				body: $scope.body,
-			}).success(function(comment) {
+		} else {
+
+			postFactory.getPost(mypost._id);
+			$scope.post = postFactory.post;
+
+			$scope.addComment = function(){
+
+				if($scope.body === '') { return; }
+
+				postFactory.addNewComment(postFactory.post._id, {
+
+					body: $scope.body,
+				}).success(function(comment) {
 
       			mypost.comments.push(comment); // Update the version in the array
       			postFactory.post.comments.push(comment);// Update the version in the view
-  			});
+      		});
 
-			$scope.body = '';
-		};
+				$scope.body = '';
+			};
 
-		$scope.incrementUpvotes = function(comment){
+			$scope.incrementUpvotes = function(comment){
 
-			console.log("incrementUp "+postFactory.post._id+" comment "+comment._id);
-			postFactory.upvoteComment(postFactory.post, comment);
-		};
-
-		$scope.reloadCtrl = function(){
-			console.log('reloading...');
-			$route.reload();
+				console.log("incrementUp "+postFactory.post._id+" comment "+comment._id);
+				postFactory.upvoteComment(postFactory.post, comment);
+			};
 		}
 	}
 ]);
